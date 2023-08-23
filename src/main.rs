@@ -9,7 +9,7 @@ async fn main() -> Result<(), playwright::Error> {
     let webkit = playwright.chromium();
     let browser = webkit
         .launcher()
-        .headless(true)
+        .headless(false)
         .downloads("C:\\Users\\jthom\\Desktop\\clips\\temp".as_ref())
         .launch().await?;
     let context = browser
@@ -36,9 +36,9 @@ async fn main() -> Result<(), playwright::Error> {
         .query_selector_all("tr[class='text-sm group']")
         .await?; // Used to remove seen clips from the clips vector
 
-    // While we don't yet have 100 embeds
     let mut streamer_vec: Vec<String> = Vec::new();
     let mut embed_vec: Vec<String> = Vec::new();
+    // While we don't yet have 100 embeds
     while (streamer_vec.len() < 100) && (embed_vec.len() < 100) {
         // If seen_clips and clips vector are different lengths, remove the clips that were already seen
         println!("{} clips", clips.len());
@@ -60,7 +60,7 @@ async fn main() -> Result<(), playwright::Error> {
         embed_vec.append(&mut temp_embed.clone());
         // After gathering the info, we should be at the bottom of the page, so click the "Show More" button
        page.query_selector("div[class='relative flex justify-center mt-6']").await?.unwrap().query_selector("button").await?.unwrap().click_builder().click().await?;
-        tokio::time::sleep(std::time::Duration::from_millis(3500)).await;
+        tokio::time::sleep(std::time::Duration::from_millis(4000)).await;
 
         // Re-assign clips vector with the newly visible clips
         // This includes clips which have already been seen so they will be removed from the clips vector at the start of the next iteration
@@ -86,7 +86,7 @@ async fn get_clip_embeds(page: &Page ,clips: &Vec<ElementHandle>) -> (Vec<String
             .unwrap().unwrap()
             .click_builder()
             .click().await;
-        // Wait 2 seconds to prevent fuckery
+        // Wait a bit to prevent fuckery
         tokio::time::sleep(std::time::Duration::from_millis(2000)).await;
         // Clip player container
         let big_clip = page.query_selector("div[class='relative w-full video-popup-position max-h-70h md:max-w-70w md:h-full']").await.unwrap().unwrap();
