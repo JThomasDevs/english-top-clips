@@ -67,6 +67,11 @@ async fn main() -> Result<(), Error> {
     for clip in old_clips {
         let _ = fs::remove_file(clip.unwrap().path());
     }
+    // Clear any temp download files from the temp folder
+    let temp_files = fs::read_dir("C:\\Users\\jthom\\Desktop\\clips\\temp").unwrap();
+    for file in temp_files {
+        let _ = fs::remove_file(file.unwrap().path());
+    }
     println!("Old clips removed");
     // For each clip, navigate to clipsey.com and download it
     for (i, url) in url_vec.iter().enumerate() {
@@ -94,7 +99,6 @@ async fn main() -> Result<(), Error> {
         tokio::time::sleep(tokio::time::Duration::from_millis(6000)).await;
         let files = fs::read_dir("C:\\Users\\jthom\\Desktop\\clips\\temp").unwrap();
         for file in files {
-            fs::remove_file(file).unwrap(); // In case any temp download files got stuck
             fs::rename(file.unwrap().path(), format!("C:\\Users\\jthom\\Desktop\\clips\\english clips\\{}-{}.mp4", i+1, streamer_vec[i])).unwrap();
         }
         println!("Downloaded clip {} of {}\n", i+1, url_vec.len());
