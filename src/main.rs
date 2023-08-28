@@ -1,7 +1,7 @@
 use std::fs;
 use playwright::*;
 use playwright::api::ElementHandle;
-use tokio;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -129,11 +129,11 @@ async fn clip_links(clip_vec: Vec<ElementHandle>) ->  (Vec<String>, Vec<String>)
             .expect("Can't find clip link :(");
         println!("Creator of clip {}: {}", i+1, url.as_ref()
             .unwrap()
-            .split("/")
+            .split('/')
             .nth(1)
             .unwrap());
         streamer_vec.push(url.as_ref()
-            .unwrap().split("/")
+            .unwrap().split('/')
             .nth(1)
             .unwrap()
             .to_string());
