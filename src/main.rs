@@ -54,7 +54,7 @@ async fn main() -> Result<(), Error> {
     // Chromium settings
     let chromium = playwright.chromium();
     let browser = chromium.launcher()
-        .headless(true)
+        .headless(false)
         .downloads("C:\\Users\\jthom\\Desktop\\clips\\temp".as_ref())
         .launch().await?;
     let context = browser.context_builder()
@@ -95,11 +95,17 @@ async fn main() -> Result<(), Error> {
             .click().await?;
 
         // The downloaded clip has a random name, so we rename it to the clip ranking + the streamer's name
-        // Wait 5.5 seconds before trying to rename the file to prevent fuckery
-        tokio::time::sleep(tokio::time::Duration::from_millis(6000)).await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
         let files = fs::read_dir("C:\\Users\\jthom\\Desktop\\clips\\temp").unwrap();
         for file in files {
-            fs::rename(file.unwrap().path(), format!("C:\\Users\\jthom\\Desktop\\clips\\english clips\\{}-{}.mp4", i+1, streamer_vec[i])).unwrap();
+            // Because can_rename is a result, it will be Err(false) until the file is able to be moved + renamed AKA when the download is finished
+            loop {
+                // In addition to checking if the rename is valid, it also performs the renaming action so once the file is able to be renamed and has been, the loop will break
+                let can_rename = fs::rename(file.as_ref().unwrap().path(), format!("C:\\Users\\jthom\\Desktop\\clips\\english clips\\{}-{}.mp4", i+1, streamer_vec[i])).is_ok();
+                if can_rename {
+                    break;
+                }
+            }
         }
         println!("Downloaded clip {} of {}\n", i+1, url_vec.len());
         page.close(Some(false)).await?;
