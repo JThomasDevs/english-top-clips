@@ -28,22 +28,46 @@ async fn main() -> Result<(), Error> {
 
     // Change language to English
     // open language menu
-    page.query_selector("div[class='Layout-sc-1xcs6mc-0 fFENuB']").await?.unwrap().query_selector("button").await?.expect("Couldn't open language menu").click_builder().click().await?;
+    page.query_selector("div[class='Layout-sc-1xcs6mc-0 eMtMuE']")
+        .await?
+        .unwrap()
+        .query_selector("button")
+        .await?
+        .expect("Couldn't open language menu")
+        .click_builder()
+        .click()
+        .await?;
     tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
     // click English
-    page.query_selector("div[class='Layout-sc-1xcs6mc-0 gWkOOv']").await?.expect("Couldn't click on English").click_builder().click().await?;
+    page.query_selector("div[class='Layout-sc-1xcs6mc-0 ScCheckboxLayout-sc-1wg5med-0 gyuRLA iHLDGQ tw-checkbox']")
+        .await?
+        .expect("Couldn't click on English")
+        .click_builder()
+        .click()
+        .await?;
 
     // Find all initial clips and then click a blank part of the page so the keyboard may be used
-    let mut clips = page.query_selector_all("div[class='Layout-sc-1xcs6mc-0 iPAXTU']").await?;
-    page.query_selector("div[data-a-target='root-scroller']").await?
+    let mut clips = page.query_selector("div[class='ScTower-sc-1sjzzes-0 RMeqZ tw-tower']")
+        .await?
+        .unwrap()
+        .query_selector_all("div[class='Layout-sc-1xcs6mc-0 iaYZdR']")
+        .await?;
+    page.query_selector("div[data-a-target='root-scroller']")
+        .await?
         .expect("Can't find where to click :(")
         .click_builder()
-        .click().await?;
+        .click()
+        .await?;
     while clips.len() < 80 { // Gather 80 clip container elements in a vector
         page.keyboard
-            .down("Space").await?;
+            .down("Space")
+            .await?;
         tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-        clips = page.query_selector_all("div[class='Layout-sc-1xcs6mc-0 iPAXTU']").await?;
+        clips = page.query_selector("div[class='ScTower-sc-1sjzzes-0 RMeqZ tw-tower']")
+            .await?
+            .unwrap()
+            .query_selector_all("div[class='Layout-sc-1xcs6mc-0 iaYZdR']")
+            .await?;
     }
     println!("Found {} clips", clips.len());
     // Get a link for each clip
@@ -54,7 +78,7 @@ async fn main() -> Result<(), Error> {
     // Chromium settings
     let chromium = playwright.chromium();
     let browser = chromium.launcher()
-        .headless(false)
+        .headless(true)
         .downloads("C:\\Users\\jthom\\Desktop\\clips\\temp".as_ref())
         .launch().await?;
     let context = browser.context_builder()
@@ -78,7 +102,9 @@ async fn main() -> Result<(), Error> {
         // Open a new page
         let page = context.new_page().await?;
         // Navigate to clipsey.com
-        page.goto_builder("https://clipsey.com/").goto().await?;
+        page.goto_builder("https://clipsey.com/")
+            .goto()
+            .await?;
         let target = "https://www.twitch.tv".to_owned() + url.as_ref();
         println!("{}", &target);
         page.query_selector("input[class='clip-url-input']").await?
